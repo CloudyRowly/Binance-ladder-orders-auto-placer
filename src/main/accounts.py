@@ -17,7 +17,6 @@ class Accounts():
         ))
 
         self.config.read(config_file_path)
-        print ()
 
         if not self.config.sections():  # check for config.ini in subfolder
             config_file_path = os.path.abspath(os.path.join(

@@ -66,63 +66,63 @@ class Broker(ctk.CTk):
         self.show_message("Total: " + str(total) + " USDT")
 
 
-    def get_text_to_decimal(textbox):
+    def get_text_to_decimal(self, textbox):
         output = -1
         try:
             output = Decimal(textbox.get("0.0", "end"))
         except InvalidOperation:
-            show_message("kiểm tra lại só liệu nhập vào!")
+            self.show_message("kiểm tra lại só liệu nhập vào!")
         return output
 
 
-    def get_text_to_int(textbox):
+    def get_text_to_int(self, textbox):
         output = -1
         try:
             output = int(textbox.get("0.0", "end"))
         except InvalidOperation:
-            show_message("kiểm tra lại só liệu nhập vào!")
+            self.show_message("kiểm tra lại só liệu nhập vào!")
         return output
 
 
-    def fetch_info():
-        price = get_text_to_decimal(self.textbox_price)
-        amount = get_text_to_decimal(self.textbox_amount)
-        price_step = get_text_to_decimal(self.textbox_price_step)
-        step = get_text_to_int(self.textbox_steps)
+    def fetch_info(self):
+        price = self.get_text_to_decimal(self.textbox_price)
+        amount = self.get_text_to_decimal(self.textbox_amount)
+        price_step = self.get_text_to_decimal(self.textbox_price_step)
+        step = self.get_text_to_int(self.textbox_steps)
         return price, price_step, step, amount
 
 
     def button_sell_event(self):
         self.button_sell.configure(state="disabled")
-        price, price_step, step, amount = fetch_info()
+        price, price_step, step, amount = self.fetch_info()
         if price == -1 or price_step == -1 or step == -1 or amount == -1:
             app.after(300, self.button_sell.configure(state="normal"))
             return
 
-        success = order.sell_margin_multiple(Symbol.LTCUSDT, price, price_step, step, amount)
+        success = self.order.sell_margin_multiple(Symbol.LTCUSDT, price, price_step, step, amount)
         if not success:
-            show_message("Error: chưa đặt được lệnh")
+            self.show_message("Error: chưa đặt được lệnh")
         else:
-            show_message("Đặt lệnh thành công!")
+            self.show_message("Đặt lệnh thành công!")
         app.after(300, self.button_sell.configure(state="normal"))
 
 
 
     def button_buy_event(self):
-        button_buy.configure(state="disabled")
-        price, price_step, step, amount = fetch_info()
+        self.button_buy.configure(state="disabled")
+        price, price_step, step, amount = self.fetch_info()
         if price == -1 or price_step == -1 or step == -1 or amount == -1:
-            app.after(300, button_buy.configure(state="normal"))
+            app.after(300, self.button_buy.configure(state="normal"))
             return
 
-        success = order.buy_margin_multiple(Symbol.LTCUSDT, price, price_step, step, amount)
+        success = self.order.buy_margin_multiple(Symbol.LTCUSDT, price, price_step, step, amount)
 
         ### Bug: always showing Error
         if not success:
-            show_message("Error: chưa đặt được lệnh")
+            self.show_message("Error: chưa đặt được lệnh")
         else:
-            show_message("Đặt lệnh thành công!")
-        app.after(300, button_buy.configure(state="normal"))
+            self.show_message("Đặt lệnh thành công!")
+        app.after(300, self.button_buy.configure(state="normal"))
 
 
     def switch_account(self, user):
@@ -130,9 +130,9 @@ class Broker(ctk.CTk):
 
 
     def switch_account_event(self, value):
-        show_message("switched to " + value.get() + " account")
+        self.show_message("switched to " + value.get() + " account")
         # switch account on the backend
-        switch_account(value.get())
+        self.switch_account(value.get())
 
 
     ###################################### BUTTONS ######################################

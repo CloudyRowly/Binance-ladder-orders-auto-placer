@@ -29,14 +29,14 @@ class Order:
                             filemode='w')
 
 
-    def buy_margin_multiple(symbol, start_price, price_step, steps, quantity):
+    def buy_margin_multiple(self, symbol, start_price, price_step, steps, quantity):
         for i in range(steps):
-            buy_margin(symbol, quantity / steps, start_price - (i * price_step))
+            self.buy_margin(symbol, quantity / steps, start_price - (i * price_step))
 
 
-    def sell_margin_multiple(symbol, start_price, price_step, steps, quantity):
+    def sell_margin_multiple(self, symbol, start_price, price_step, steps, quantity):
         for i in range(steps):
-            sell_margin(symbol, quantity / steps, start_price + (i * price_step))
+            self.sell_margin(symbol, quantity / steps, start_price + (i * price_step))
 
 
     def new_margin_order(self, parameters):
@@ -95,7 +95,7 @@ class Order:
             "sideEffectType": "MARGIN_BUY",
             "isIsolated": "TRUE",
         }
-        new_margin_order(params)
+        self.new_margin_order(params)
 
 
     def sell_margin(self, symbol, quantity, price):
@@ -116,4 +116,4 @@ class Order:
             "sideEffectType": "MARGIN_BUY",
             "isIsolated": "TRUE",
         }
-        new_margin_order(params)
+        self.new_margin_order(params)
