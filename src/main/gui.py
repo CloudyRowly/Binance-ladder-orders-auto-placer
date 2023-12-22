@@ -1,11 +1,13 @@
 import datetime
 from decimal import Decimal
 from decimal import InvalidOperation
+from tkinter import Misc
 import customtkinter as ctk
+
 from accounts import Accounts
 from order import Order
-
 from values import Symbol
+from custom_textbox import CustomTextBox as CTB
 
 class Broker(ctk.CTk):
 
@@ -47,7 +49,7 @@ class Broker(ctk.CTk):
         self.make_message_box()
 
 
-    ### Control Frame setting
+    ### Control Frame setting ###
     def make_control_frame(self):
         self.control_frame = ctk.CTkFrame(self)
         self.control_frame.grid(row = 1, column = 0, padx = (5,5), pady = (5,0), sticky="ew")
@@ -62,8 +64,14 @@ class Broker(ctk.CTk):
         self.textbox_message.configure(state="disabled")
 
 
-    def update_total(self, total):
-        self.show_message("Total: " + str(total) + " USDT")
+    def update_total(self, event):
+        try:
+            total = self.get_text_to_decimal(self.textbox_price) * self.get_text_to_decimal(self.textbox_amount)
+            if total > 0:
+                self.show_message("Total: " + str(total) + " USDT")
+        except InvalidOperation:
+            return
+            # do nothing
 
 
     def get_text_to_decimal(self, textbox):
@@ -92,20 +100,23 @@ class Broker(ctk.CTk):
         return price, price_step, step, amount
 
 
+    def evaluate_order_response(self, target_count, count_before, count_after, message = ""):
+        difference = int(count_after) - int(count_before)
+        self.show_message("Đã đặt " + str(difference) + "/" + str(target_count) + " lệnh: " + message)
+
     def button_sell_event(self):
         self.button_sell.configure(state="disabled")
         price, price_step, step, amount = self.fetch_info()
         if price == -1 or price_step == -1 or step == -1 or amount == -1:
             app.after(300, self.button_sell.configure(state="normal"))
             return
-
-        success = self.order.sell_margin_multiple(Symbol.LTCUSDT, price, price_step, step, amount)
-        if not success:
-            self.show_message("Error: chưa đặt được lệnh")
-        else:
-            self.show_message("Đặt lệnh thành công!")
+        order_count_before = self.order.count_open_margin_orders(Symbol.LTCUSDT)
+        response = self.order.sell_margin_multiple(Symbol.LTCUSDT, price, price_step, step, amount)
+        app.after(300, self.evaluate_order_response(step, order_count_before, 
+                                                    self.order.count_open_margin_orders(Symbol.LTCUSDT), response[5:]))
+        # if response != None:
+        #     self.show_message(response)
         app.after(300, self.button_sell.configure(state="normal"))
-
 
 
     def button_buy_event(self):
@@ -114,14 +125,10 @@ class Broker(ctk.CTk):
         if price == -1 or price_step == -1 or step == -1 or amount == -1:
             app.after(300, self.button_buy.configure(state="normal"))
             return
-
-        success = self.order.buy_margin_multiple(Symbol.LTCUSDT, price, price_step, step, amount)
-
-        ### Bug: always showing Error
-        if not success:
-            self.show_message("Error: chưa đặt được lệnh")
-        else:
-            self.show_message("Đặt lệnh thành công!")
+        order_count_before = self.order.count_open_margin_orders(Symbol.LTCUSDT)
+        response = self.order.buy_margin_multiple(Symbol.LTCUSDT, price, price_step, step, amount)
+        app.after(300, self.evaluate_order_response(step, order_count_before, 
+                                                    self.order.count_open_margin_orders(Symbol.LTCUSDT), response[5:]))
         app.after(300, self.button_buy.configure(state="normal"))
 
 
@@ -168,21 +175,31 @@ class Broker(ctk.CTk):
     def make_text_boxes(self):
         self.box_height = self.label_price.cget("height")
 
-        self.textbox_price = ctk.CTkTextbox(self.control_frame, height = self.box_height, width=185)
+        self.textbox_price = CTB(self.control_frame, height = self.box_height, width=185)
         self.textbox_price.insert("0.0", "price")
         self.textbox_price.grid(row=0, column = 1, padx=5, pady = 10, sticky="ew")
 
-        self.textbox_amount = ctk.CTkTextbox(self.control_frame, height = self.box_height, width=185)
+        self.textbox_amount = CTB(self.control_frame, height = self.box_height, width=185)
         self.textbox_amount.insert("0.0", "amount")
         self.textbox_amount.grid(row=1, column = 1, padx=5, pady = 10, sticky="ew")
 
-        self.textbox_price_step = ctk.CTkTextbox(self.control_frame, height = self.box_height, width=185)
+        self.textbox_price_step = CTB(self.control_frame, height = self.box_height, width=185)
         self.textbox_price_step.insert("0.0", self.default_price_steps)
         self.textbox_price_step.grid(row=2, column = 1, padx=5, pady = 10, sticky="ew")
 
-        self.textbox_steps = ctk.CTkTextbox(self.control_frame, height = self.box_height, width=185)
+        self.textbox_steps = CTB(self.control_frame, height = self.box_height, width=185)
         self.textbox_steps.insert("0.0", self.default_steps)
         self.textbox_steps.grid(row=3, column = 1, padx=5, pady = 10, sticky="ew")
+
+        # Setting "return" traversal order
+        self.textbox_price.set_next(self.textbox_amount)
+        self.textbox_amount.set_next(self.textbox_price_step)
+        self.textbox_price_step.set_next(self.textbox_steps)
+        self.textbox_steps.set_next(self.textbox_price)
+
+        # Bind event to update total
+        self.textbox_price.bind("<KeyRelease>", self.update_total)
+        self.textbox_amount.bind("<KeyRelease>", self.update_total)
 
 
     # textbox_total = ctk.CTkTextbox(app, height = box_height)
