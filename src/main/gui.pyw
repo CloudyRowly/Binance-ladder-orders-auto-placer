@@ -24,7 +24,7 @@ class Broker(ctk.CTk):
         self.acc = Accounts()
         
         # Set app basic UI config
-        self.title("2.0 - Cloudy Binance LTC margin broker")
+        self.title("2.1 - Cloudy Binance LTC margin broker")
         self.geometry("400x330")
         self.resizable(False, False)
         
