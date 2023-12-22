@@ -6,7 +6,7 @@
 
 This is a tool for traders to quickly scatter multiple orders at different price steps with just one mouse-click when either buying or selling. Splitting orders to smaller sub-orders at different prices will help traders to get orders filled at the best price without compromises as it is very hard to tell the exact turning points (resistant and peak) of any asset. 
 
-For instance, if a trader just place a single order at a speculative resistance of $76, the order may barely be filled even if the difference between the actual resistance (for example $76.1) is marginable, therefore missing the good opportunity to buy. If instead the trader placed multiple smaller orders in a ladder manner e.g. 33% of the total amount at 76.2, 33% of the total amount at $76.1 and 33% of the total amount at $76, at least some of the orders will be filled at roughly the desired price, therefore the trader will not miss the opportunity entirely. 
+For instance, if a trader just place a single order at a speculative resistance of $76, the order may barely be filled even if the difference between the actual resistance (for example $76.1) is marginable, therefore missing the good opportunity to buy. If instead the trader placed multiple smaller orders in a ladder manner e.g. 33% of the total amount at $76.2, 33% of the total amount at $76.1 and 33% of the total amount at $76, at least some of the orders will be filled at roughly the desired price, therefore the trader will not miss the opportunity entirely. 
 
 However, placing multiple orders can be time-consuming, therefore this tool is created to help traders place multiple orders with just one click after setting the parameters once.
 
