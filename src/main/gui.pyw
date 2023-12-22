@@ -1,6 +1,8 @@
 import datetime
 from decimal import Decimal
 from decimal import InvalidOperation
+import os
+import pathlib
 from tkinter import Misc
 import customtkinter as ctk
 
@@ -22,9 +24,11 @@ class Broker(ctk.CTk):
         self.acc = Accounts()
         
         # Set app basic UI config
-        self.title("Cloudy Binance broker")
+        self.title("2.0 - Cloudy Binance LTC margin isolated broker")
         self.geometry("400x330")
         self.resizable(False, False)
+        icon_path = os.path.abspath(os.path.join(pathlib.Path(__file__).parent.resolve(), '..', 'resource', 'assets', 'icon.ico'))
+        self.iconbitmap(icon_path)
         
         # Basic parameters and initializations
         # Supported modes : Light, Dark, System
@@ -67,7 +71,7 @@ class Broker(ctk.CTk):
     def update_total(self, event):
         try:
             total = self.get_text_to_decimal(self.textbox_price) * self.get_text_to_decimal(self.textbox_amount)
-            if total > 0:
+            if total > 1:
                 self.show_message("Total: " + str(total) + " USDT")
         except InvalidOperation:
             return
