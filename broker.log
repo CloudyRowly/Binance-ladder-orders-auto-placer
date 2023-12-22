@@ -1,3 +1,7 @@
-2023-12-22 16:18:31,220 Found error. status: 400, error code: -11008, error message: Exceeding the account's maximum borrowable limit.
-2023-12-22 16:18:40,069 Found error. status: 400, error code: -11008, error message: Exceeding the account's maximum borrowable limit.
-2023-12-22 16:18:50,038 Found error. status: 400, error code: -11008, error message: Exceeding the account's maximum borrowable limit.
+2023-12-22 16:27:27,050 Found error. status: 400, error code: -11008, error message: Exceeding the account's maximum borrowable limit.
+2023-12-22 16:27:34,281 Found error. status: 400, error code: -11008, error message: Exceeding the account's maximum borrowable limit.
+2023-12-22 16:27:50,061 Found error. status: 400, error code: -11001, error message: Isolated margin account does not exist.
+2023-12-22 16:27:50,205 Found error. status: 400, error code: -11001, error message: Isolated margin account does not exist.
+2023-12-22 16:27:50,309 Found error. status: 400, error code: -11001, error message: Isolated margin account does not exist.
+2023-12-22 16:27:59,054 Found error. status: 400, error code: -11008, error message: Exceeding the account's maximum borrowable limit.
+2023-12-22 16:28:02,354 Found error. status: 400, error code: -11008, error message: Exceeding the account's maximum borrowable limit.

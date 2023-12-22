@@ -1,6 +1,6 @@
-src/main/__pycache
-src/main/built
-src/main/dist
-src/main/broker.log
-src/main/config.ini
-src/main/gui.spec
+/src/main/__pycache
+/src/main/built
+/src/main/dist
+broker.log
+/src/main/config.ini
+/src/main/gui.spec
