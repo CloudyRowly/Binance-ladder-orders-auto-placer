@@ -3,7 +3,7 @@ from decimal import Decimal
 from decimal import InvalidOperation
 import os
 import pathlib
-from tkinter import Misc
+import sys
 import customtkinter as ctk
 
 from accounts import Accounts
@@ -24,10 +24,18 @@ class Broker(ctk.CTk):
         self.acc = Accounts()
         
         # Set app basic UI config
-        self.title("2.0 - Cloudy Binance LTC margin isolated broker")
+        self.title("2.0 - Cloudy Binance LTC margin broker")
         self.geometry("400x330")
         self.resizable(False, False)
-        icon_path = os.path.abspath(os.path.join(pathlib.Path(__file__).parent.resolve(), '..', 'resource', 'assets', 'icon.ico'))
+        
+        # Set app icon
+        if getattr(sys, 'frozen', False):  # Check if we're running as a PyInstaller bundle
+            # We're running in a PyInstaller bundle
+            base_dir = sys._MEIPASS
+        else:
+            # We're running in a normal Python environment
+            base_dir = os.path.abspath(os.path.join(pathlib.Path(__file__).parent.resolve(), '..', 'resource', 'assets'))
+        icon_path = os.path.join(base_dir, 'icon.ico')
         self.iconbitmap(icon_path)
         
         # Basic parameters and initializations
