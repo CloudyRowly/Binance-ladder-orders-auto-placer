@@ -28,21 +28,28 @@ class Order:
         # Create and configure logger
         logging.basicConfig(filename="broker.log",
                             format='%(asctime)s %(message)s',
-                            filemode='w')
+                            filemode='w',
+                            level=logging.DEBUG)
 
 
     def buy_margin_multiple(self, symbol, start_price, price_step, steps, quantity):
         for i in range(steps):
             response = self.buy_margin(symbol, quantity / steps, start_price - (i * price_step))
-            if(response[0:3] == "Err"):  # terminate next orders if error encounter
+            try:
+                response["error_code"]
                 break
+            except KeyError as error:
+                pass
         return response
 
     def sell_margin_multiple(self, symbol, start_price, price_step, steps, quantity):
         for i in range(steps):
             response = self.sell_margin(symbol, quantity / steps, start_price + (i * price_step))
-            if(response[0:3] == "Err"):  # terminate next orders if error encounter
+            try:
+                response["error_code"]
                 break
+            except KeyError as error:
+                pass
         return response
 
 
@@ -96,12 +103,13 @@ class Order:
         """
         try:
             response = self.client.new_margin_order(**parameters)
-            logging.info(response.text)
-            print(response.text)
+            logging.info(str(response))
+            print(response)
             return response
         except ClientError as error:
             self.error_logging(error)
-            return "Err {} - {}".format(error.error_code, error.error_message)
+            return {"error_code": error.error_code,
+                    "error_message": error.error_message}
 
 
     def new_spot_order(self, parameters):
@@ -112,8 +120,8 @@ class Order:
         """
         try:
             response = self.client.new_order(**parameters)
-            logging.info(response.text)
-            print(response.text)
+            logging.info(str(response))
+            print(response)
             return response
         except ClientError as error:
             logging.error(
@@ -121,7 +129,8 @@ class Order:
                     error.status_code, error.error_code, error.error_message
                 )
             )
-            return "Err {} - {}".format(error.error_code, error.error_message)
+            return {"error_code": error.error_code,
+                    "error_message": error.error_message}
 
 
     def get_open_margin_orders(self, symbol):
@@ -136,7 +145,8 @@ class Order:
             return response
         except ClientError as error:
             self.error_logging(error)
-            return "Err {} - {}".format(error.error_code, error.error_message)
+            return {"error_code": error.error_code,
+                    "error_message": error.error_message}
     
 
     def count_open_margin_orders(self, symbol):
@@ -149,7 +159,8 @@ class Order:
             return len(response)
         except ClientError as error:
             self.error_logging(error)
-            return "Err {} - {}".format(error.error_code, error.error_message)
+            return {"error_code": error.error_code,
+                    "error_message": error.error_message}
     
 
     def error_logging(self, error):

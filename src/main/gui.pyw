@@ -114,7 +114,11 @@ class Broker(ctk.CTk):
 
     def evaluate_order_response(self, target_count, count_before, count_after, message = ""):
         difference = int(count_after) - int(count_before)
-        self.show_message("Đã đặt " + str(difference) + "/" + str(target_count) + " lệnh: " + message)
+        try:
+            message = message["error_message"]
+            self.show_message("Đã đặt " + str(difference) + "/" + str(target_count) + " lệnh: " + message)
+        except KeyError:
+            self.show_message("Đã đặt " + str(difference) + "/" + str(target_count) + " lệnh")
 
     def button_sell_event(self):
         self.button_sell.configure(state="disabled")
@@ -125,7 +129,7 @@ class Broker(ctk.CTk):
         order_count_before = self.order.count_open_margin_orders(Symbol.LTCUSDT)
         response = self.order.sell_margin_multiple(Symbol.LTCUSDT, price, price_step, step, amount)
         app.after(300, self.evaluate_order_response(step, order_count_before, 
-                                                    self.order.count_open_margin_orders(Symbol.LTCUSDT), response[5:]))
+                                                    self.order.count_open_margin_orders(Symbol.LTCUSDT), response))
         # if response != None:
         #     self.show_message(response)
         app.after(300, self.button_sell.configure(state="normal"))
@@ -140,7 +144,7 @@ class Broker(ctk.CTk):
         order_count_before = self.order.count_open_margin_orders(Symbol.LTCUSDT)
         response = self.order.buy_margin_multiple(Symbol.LTCUSDT, price, price_step, step, amount)
         app.after(300, self.evaluate_order_response(step, order_count_before, 
-                                                    self.order.count_open_margin_orders(Symbol.LTCUSDT), response[5:]))
+                                                    self.order.count_open_margin_orders(Symbol.LTCUSDT), response))
         app.after(300, self.button_buy.configure(state="normal"))
 
 
