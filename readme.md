@@ -34,7 +34,13 @@ To use the program, you can either run the program from gui.pyw using python cli
 Use the following commands to build the application once you have setup the config.ini file. Run it using the terminal from the repo's root directory:  
 ```
 $ pip install pyinstaller
-$ pyinstaller -i src/resource/assets/icon.ico -n "Cloudy LTC isolated Broker" --onefile --noupx --clean --add-data "src/main/config.ini:." --add-data "src/resource/assets/icon.ico:." src/main/gui.pyw
+$ pyinstaller -i src/resource/assets/icon.ico -n "Cloudy LTC isolated Broker" --onefile --noupx --clean --add-data "src/main/config.ini:." --add-data "src/main/save.json:." --add-data "src/resource/assets/icon.ico:." src/main/gui.pyw
+```
+
+```
+$ python.exe -m pip install --upgrade pip
+$ pip install nuitka
+$ python311.exe -m nuitka --onefile --disable-console --windows-icon-from-ico=src/resource/assets/icon.ico --include-data-files=src/main/config.ini=. --include-data-files=src/resource/assets/icon.ico=. --include-data-files=src/main/save.json=. --enable-plugin=tk-inter src/main/gui.pyw
 ```
 
 # Main class

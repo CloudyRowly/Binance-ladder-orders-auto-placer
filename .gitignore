@@ -5,3 +5,8 @@ broker.log
 /src/main/config.ini
 gui.spec
 Cloudy LTC isolated Broker.spec
+gui.spec
+gui.build/
+gui.dist/
+gui.onefile-build/
+gui.exe

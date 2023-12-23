@@ -28,7 +28,6 @@ class Order:
         # Create and configure logger
         logging.basicConfig(filename="broker.log",
                             format='%(asctime)s %(message)s',
-                            filemode='w',
                             level=logging.DEBUG)
 
 

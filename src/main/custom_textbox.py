@@ -10,10 +10,11 @@ class CustomTextBox(ctk.CTkTextbox):
     
     
     def on_focus(self, event):
-        try:
-            Decimal(self.get("0.0", "end"))
-        except InvalidOperation:
-            self.delete("0.0", "end")
+        self.delete("0.0", "end")
+        # try:
+        #     Decimal(self.get("0.0", "end"))
+        # except InvalidOperation:
+        #     self.delete("0.0", "end")
 
     
     def on_return(self, event):

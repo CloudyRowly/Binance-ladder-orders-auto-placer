@@ -1,9 +1,11 @@
 import datetime
 from decimal import Decimal
 from decimal import InvalidOperation
+import json
 import os
 import pathlib
 import sys
+from ctypes import WinDLL
 import customtkinter as ctk
 
 from accounts import Accounts
@@ -24,7 +26,7 @@ class Broker(ctk.CTk):
         self.acc = Accounts()
         
         # Set app basic UI config
-        self.title("2.1 - Cloudy Binance LTC margin broker")
+        self.title("2.2 - Cloudy Binance LTC margin broker")
         self.geometry("400x330")
         self.resizable(False, False)
         
@@ -32,6 +34,7 @@ class Broker(ctk.CTk):
         if getattr(sys, 'frozen', False):  # Check if we're running as a PyInstaller bundle
             # We're running in a PyInstaller bundle
             base_dir = sys._MEIPASS
+            # base_dir = os.path.dirname(sys.argv[0])
         else:
             # We're running in a normal Python environment
             base_dir = os.path.abspath(os.path.join(pathlib.Path(__file__).parent.resolve(), '..', 'resource', 'assets'))
@@ -59,6 +62,22 @@ class Broker(ctk.CTk):
         self.make_labels()
         self.make_text_boxes()
         self.make_message_box()
+        self.load_save()
+
+
+    def load_save(self):
+        try:
+            save_file_path = os.path.abspath(os.path.join(
+                pathlib.Path(__file__).parent.resolve(), "save.json"
+            ))
+            with open(save_file_path, 'r') as f:
+                data = json.load(f)
+                self.textbox_price.delete("0.0", "end")
+                self.textbox_price.insert("0.0", data["price"])
+                self.account_selection.set(data["account"])
+                self.switch_account(data["account"])
+        except Exception:
+            pass
 
 
     ### Control Frame setting ###
@@ -124,28 +143,28 @@ class Broker(ctk.CTk):
         self.button_sell.configure(state="disabled")
         price, price_step, step, amount = self.fetch_info()
         if price == -1 or price_step == -1 or step == -1 or amount == -1:
-            app.after(300, self.button_sell.configure(state="normal"))
+            self.after(300, self.button_sell.configure(state="normal"))
             return
         order_count_before = self.order.count_open_margin_orders(Symbol.LTCUSDT)
         response = self.order.sell_margin_multiple(Symbol.LTCUSDT, price, price_step, step, amount)
-        app.after(300, self.evaluate_order_response(step, order_count_before, 
+        self.after(300, self.evaluate_order_response(step, order_count_before, 
                                                     self.order.count_open_margin_orders(Symbol.LTCUSDT), response))
         # if response != None:
         #     self.show_message(response)
-        app.after(300, self.button_sell.configure(state="normal"))
+        self.after(300, self.button_sell.configure(state="normal"))
 
 
     def button_buy_event(self):
         self.button_buy.configure(state="disabled")
         price, price_step, step, amount = self.fetch_info()
         if price == -1 or price_step == -1 or step == -1 or amount == -1:
-            app.after(300, self.button_buy.configure(state="normal"))
+            self.after(300, self.button_buy.configure(state="normal"))
             return
         order_count_before = self.order.count_open_margin_orders(Symbol.LTCUSDT)
         response = self.order.buy_margin_multiple(Symbol.LTCUSDT, price, price_step, step, amount)
-        app.after(300, self.evaluate_order_response(step, order_count_before, 
+        self.after(300, self.evaluate_order_response(step, order_count_before, 
                                                     self.order.count_open_margin_orders(Symbol.LTCUSDT), response))
-        app.after(300, self.button_buy.configure(state="normal"))
+        self.after(300, self.button_buy.configure(state="normal"))
 
 
     def switch_account(self, user):
@@ -229,5 +248,37 @@ class Broker(ctk.CTk):
         self.textbox_message.configure(state="disabled")
 
 
-app = Broker()
-app.mainloop()
+    def instance_check(app_name):
+        U32DLL = WinDLL('user32')
+        # get the handle of any window matching 'app_name'
+        hwnd = U32DLL.FindWindowW(None, app_name)
+        if hwnd:  # if a matching window exists...
+            # focus the existing window
+            U32DLL.ShowWindow(hwnd, 5)
+            U32DLL.SetForegroundWindow(hwnd)
+            # bail
+            sys.exit(0)
+        return True
+    
+
+    def on_closing(self):
+        price, price_step, step, amount = self.fetch_info()
+        account = self.account_selection.get()
+        data = {"price": str(price), "price_step": str(price_step), "step": str(step), "amount": str(amount), "account": account}
+        save_file_path = os.path.abspath(os.path.join(
+                pathlib.Path(__file__).parent.resolve(), "save.json"
+            ))
+        with open(save_file_path, 'w') as f:
+            json.dump(data, f)
+        self.destroy()
+
+
+def main():
+    if Broker.instance_check("2.2 - Cloudy Binance LTC margin broker"):
+        app = Broker()
+        app.protocol("WM_DELETE_WINDOW", app.on_closing)
+        app.mainloop()
+
+
+if __name__ == "__main__":
+    main()
