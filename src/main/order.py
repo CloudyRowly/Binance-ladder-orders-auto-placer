@@ -41,6 +41,7 @@ class Order:
                 pass
         return response
 
+
     def sell_margin_multiple(self, symbol, start_price, price_step, steps, quantity):
         for i in range(steps):
             response = self.sell_margin(symbol, quantity / steps, start_price + (i * price_step))

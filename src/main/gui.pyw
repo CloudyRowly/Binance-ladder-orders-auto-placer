@@ -26,7 +26,7 @@ class Broker(ctk.CTk):
         self.acc = Accounts()
         
         # Set app basic UI config
-        self.title("2.2 - Cloudy Binance LTC margin broker")
+        self.title("2.3 - Cloudy Binance LTC margin broker")
         self.geometry("400x330")
         self.resizable(False, False)
         
@@ -139,32 +139,57 @@ class Broker(ctk.CTk):
         except KeyError:
             self.show_message("Đã đặt " + str(difference) + "/" + str(target_count) + " lệnh")
 
+
+    def order_margin_multiple(self, symbol, start_price, price_step, steps, quantity, margin_function):
+        for i in range(steps):
+            self.after(50)
+            try:
+                for j in range(4):  # retry up to 4 times if order fails
+                    response = margin_function(symbol, quantity / steps, start_price - (i * price_step))
+                    error_code = response["error_code"]
+                    if abs(int(error_code)) == 11008:  # terminate if exceeding account's maximum borrowable limit.
+                        break
+                    wait = 300 + (j * 700)
+                    self.show_message("Lệnh {}/{} không thành công, sẽ thử lại sau {}s".format(i + 1, steps, wait/1000))
+                    self.after(wait)
+                break
+            except KeyError as error:
+                pass
+        return response
+
+
     def button_sell_event(self):
         self.button_sell.configure(state="disabled")
+        self.button_buy.configure(state="disabled")
         price, price_step, step, amount = self.fetch_info()
         if price == -1 or price_step == -1 or step == -1 or amount == -1:
             self.after(300, self.button_sell.configure(state="normal"))
             return
         order_count_before = self.order.count_open_margin_orders(Symbol.LTCUSDT)
-        response = self.order.sell_margin_multiple(Symbol.LTCUSDT, price, price_step, step, amount)
+        response = self.order_margin_multiple(Symbol.LTCUSDT, price, price_step, step, amount, self.order.sell_margin)
         self.after(300, self.evaluate_order_response(step, order_count_before, 
                                                     self.order.count_open_margin_orders(Symbol.LTCUSDT), response))
         # if response != None:
         #     self.show_message(response)
-        self.after(300, self.button_sell.configure(state="normal"))
+        self.after(300)
+        self.button_sell.configure(state="normal")
+        self.button_buy.configure(state="normal")
 
 
     def button_buy_event(self):
+        self.button_sell.configure(state="disabled")
         self.button_buy.configure(state="disabled")
         price, price_step, step, amount = self.fetch_info()
         if price == -1 or price_step == -1 or step == -1 or amount == -1:
             self.after(300, self.button_buy.configure(state="normal"))
             return
         order_count_before = self.order.count_open_margin_orders(Symbol.LTCUSDT)
-        response = self.order.buy_margin_multiple(Symbol.LTCUSDT, price, price_step, step, amount)
+        response = self.order_margin_multiple(Symbol.LTCUSDT, price, price_step, step, amount, self.order.buy_margin)
         self.after(300, self.evaluate_order_response(step, order_count_before, 
                                                     self.order.count_open_margin_orders(Symbol.LTCUSDT), response))
-        self.after(300, self.button_buy.configure(state="normal"))
+        self.after(300)
+        self.button_sell.configure(state="normal")
+        self.button_buy.configure(state="normal")
 
 
     def switch_account(self, user):
