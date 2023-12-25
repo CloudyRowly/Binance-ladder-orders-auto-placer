@@ -31,28 +31,6 @@ class Order:
                             level=logging.DEBUG)
 
 
-    def buy_margin_multiple(self, symbol, start_price, price_step, steps, quantity):
-        for i in range(steps):
-            response = self.buy_margin(symbol, quantity / steps, start_price - (i * price_step))
-            try:
-                response["error_code"]
-                break
-            except KeyError as error:
-                pass
-        return response
-
-
-    def sell_margin_multiple(self, symbol, start_price, price_step, steps, quantity):
-        for i in range(steps):
-            response = self.sell_margin(symbol, quantity / steps, start_price + (i * price_step))
-            try:
-                response["error_code"]
-                break
-            except KeyError as error:
-                pass
-        return response
-
-
     def buy_margin(self, symbol, quantity, price):
         """function to place a buy order
 

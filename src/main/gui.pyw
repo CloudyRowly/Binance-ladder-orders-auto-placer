@@ -66,19 +66,21 @@ class Broker(ctk.CTk):
 
 
     def load_save(self):
+        data = {}
         try:
             save_file_path = os.path.abspath(os.path.join(
                 pathlib.Path(__file__).parent.resolve(), "save.json"
             ))
             with open(save_file_path, 'r') as f:
                 data = json.load(f)
-                self.textbox_price.delete("0.0", "end")
-                self.textbox_price.insert("0.0", data["price"])
-                self.account_selection.set(data["account"])
-                self.switch_account(data["account"])
+                if data["price"] != 0:    
+                    self.textbox_price.delete("0.0", "end")
+                    self.textbox_price.insert("0.0", data["price"])
         except Exception:
             pass
 
+        self.account_selection.set(data["account"])
+        self.switch_account(data["account"])
 
     ### Control Frame setting ###
     def make_control_frame(self):
@@ -111,6 +113,7 @@ class Broker(ctk.CTk):
             output = Decimal(textbox.get("0.0", "end"))
         except InvalidOperation:
             self.show_message("kiểm tra lại só liệu nhập vào!")
+            raise InvalidOperation
         return output
 
 
@@ -120,6 +123,7 @@ class Broker(ctk.CTk):
             output = int(textbox.get("0.0", "end"))
         except InvalidOperation:
             self.show_message("kiểm tra lại só liệu nhập vào!")
+            raise InvalidOperation
         return output
 
 
@@ -287,19 +291,27 @@ class Broker(ctk.CTk):
     
 
     def on_closing(self):
-        price, price_step, step, amount = self.fetch_info()
-        account = self.account_selection.get()
-        data = {"price": str(price), "price_step": str(price_step), "step": str(step), "amount": str(amount), "account": account}
-        save_file_path = os.path.abspath(os.path.join(
-                pathlib.Path(__file__).parent.resolve(), "save.json"
-            ))
-        with open(save_file_path, 'w') as f:
-            json.dump(data, f)
+        try:
+            price, price_step, step, amount = self.fetch_info()
+            account = self.account_selection.get()
+            data = {"price": str(price), "price_step": str(price_step), "step": str(step), "amount": str(amount), "account": account}
+        except Exception:
+            account = self.account_selection.get()
+            data = {"price": 0, "price_step": 0, "step": 0, "amount": 0, "account": account}
+        
+        try:
+            save_file_path = os.path.abspath(os.path.join(
+                        pathlib.Path(__file__).parent.resolve(), "save.json"
+                    ))
+            with open(save_file_path, 'w') as f:
+                json.dump(data, f)
+        except Exception:
+            pass
         self.destroy()
 
 
 def main():
-    if Broker.instance_check("2.2 - Cloudy Binance LTC margin broker"):
+    if Broker.instance_check("2.3 - Cloudy Binance LTC margin broker"):
         app = Broker()
         app.protocol("WM_DELETE_WINDOW", app.on_closing)
         app.mainloop()
