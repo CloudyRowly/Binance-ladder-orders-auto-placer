@@ -69,7 +69,7 @@ class Broker(ctk.CTk):
         data = {}
         try:
             save_file_path = os.path.abspath(os.path.join(
-                pathlib.Path(__file__).parent.resolve(), "save.json"
+                os.path.expanduser('~'), "save.json"
             ))
             with open(save_file_path, 'r') as f:
                 data = json.load(f)
@@ -79,8 +79,11 @@ class Broker(ctk.CTk):
         except Exception:
             pass
 
-        self.account_selection.set(data["account"])
-        self.switch_account(data["account"])
+        try:
+            self.account_selection.set(data["account"])
+            self.switch_account(data["account"])
+        except Exception:
+            pass
 
     ### Control Frame setting ###
     def make_control_frame(self):
@@ -301,7 +304,7 @@ class Broker(ctk.CTk):
         
         try:
             save_file_path = os.path.abspath(os.path.join(
-                        pathlib.Path(__file__).parent.resolve(), "save.json"
+                        os.path.expanduser('~'), "save.json"
                     ))
             with open(save_file_path, 'w') as f:
                 json.dump(data, f)
