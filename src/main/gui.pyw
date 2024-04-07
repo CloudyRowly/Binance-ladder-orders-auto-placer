@@ -210,8 +210,10 @@ class Broker(ctk.CTk):
         self.button_sell.configure(state="disabled")
         self.button_buy.configure(state="disabled")
         price, price_step, step, amount = self.fetch_info()
-        if price == -1 or price_step == -1 or step == -1 or amount == -1:
+        if price <= 0 or price_step <= 0 or step <= 0 or amount <= 0:
             self.after(300, self.button_sell.configure(state="normal"))
+            self.after(300, self.button_buy.configure(state="normal"))
+            self.show_message("kiểm tra lại só liệu nhập vào!")
             return
         order_count_before = self.order.count_open_margin_orders(Symbol.LTCUSDT)
         response = self.order_margin_multiple(Symbol.LTCUSDT, price, price_step, step, amount, self.order.sell_margin)
@@ -228,8 +230,10 @@ class Broker(ctk.CTk):
         self.button_sell.configure(state="disabled")
         self.button_buy.configure(state="disabled")
         price, price_step, step, amount = self.fetch_info()
-        if price == -1 or price_step == -1 or step == -1 or amount == -1:
+        if price <= 0 or price_step <= 0 or step <= 0 or amount <= 0:
+            self.after(300, self.button_sell.configure(state="normal"))
             self.after(300, self.button_buy.configure(state="normal"))
+            self.show_message("kiểm tra lại só liệu nhập vào!")
             return
         order_count_before = self.order.count_open_margin_orders(Symbol.LTCUSDT)
         response = self.order_margin_multiple(Symbol.LTCUSDT, price, price_step, step, amount, self.order.buy_margin)
