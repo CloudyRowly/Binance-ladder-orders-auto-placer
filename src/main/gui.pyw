@@ -26,7 +26,7 @@ class Broker(ctk.CTk):
         self.acc = Accounts()
         
         # Set app basic UI config
-        self.title("2.3 - Cloudy Binance LTC margin broker")
+        self.title("2.4 - Cloudy Binance LTC margin broker")
         self.geometry("400x330")
         self.resizable(False, False)
         
@@ -66,6 +66,8 @@ class Broker(ctk.CTk):
 
 
     def load_save(self):
+        """Load input data from previous session
+        """
         data = {}
         try:
             save_file_path = os.path.abspath(os.path.join(
@@ -94,6 +96,11 @@ class Broker(ctk.CTk):
 
 
     def show_message(self, message):
+        """Update message box with new message
+
+        Args:
+            message (str): message to be displayed
+        """
         self.textbox_message.configure(state="normal")
         self.textbox_message.delete("0.0", "end")
         self.textbox_message.insert("0.0", datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S") + " - " + message)
@@ -116,7 +123,6 @@ class Broker(ctk.CTk):
             output = Decimal(textbox.get("0.0", "end"))
         except InvalidOperation:
             self.show_message("kiểm tra lại só liệu nhập vào!")
-            raise InvalidOperation
         return output
 
 
@@ -126,11 +132,12 @@ class Broker(ctk.CTk):
             output = int(textbox.get("0.0", "end"))
         except InvalidOperation:
             self.show_message("kiểm tra lại só liệu nhập vào!")
-            raise InvalidOperation
         return output
 
 
     def fetch_info(self):
+        """Fetch information from data input textboxes
+        """
         price = self.get_text_to_decimal(self.textbox_price)
         amount = self.get_text_to_decimal(self.textbox_amount)
         price_step = self.get_text_to_decimal(self.textbox_price_step)
@@ -139,28 +146,62 @@ class Broker(ctk.CTk):
 
 
     def evaluate_order_response(self, target_count, count_before, count_after, message = ""):
+        """Evaluate and display if order succeeded, if fail, display error message
+        To sort out and handle error message, refer to the return data of send_request function:
+        https://github.com/binance/binance-connector-python/blob/master/binance/api.py#L104-L146
+
+        Args:
+            target_count (target number of order): target number of order
+            count_before (_type_): actual number of opened order count before placing new orders (pulled straight from Binance API)
+            count_after (_type_): actual number of opened order count after placing new orders (pulled straight from Binance API)
+            message (str, optional): response message from Binance API. Defaults to "".
+        """
         difference = int(count_after) - int(count_before)
-        try:
-            message = message["error_message"]
-            self.show_message("Đã đặt " + str(difference) + "/" + str(target_count) + " lệnh: " + message)
+        try:  # if error message is returned, order failed => show error, if cannot find error message, order succeeded
+            error_message = message["error_message"]
+            error_source = message["source"]
+            error_code = str(message["error_code"])
+            self.show_message("Đã đặt " + str(difference) + "/" + str(target_count) + " lệnh: " + 
+                              error_source + " " + error_code + " - " + error_message)
         except KeyError:
             self.show_message("Đã đặt " + str(difference) + "/" + str(target_count) + " lệnh")
 
 
     def order_margin_multiple(self, symbol, start_price, price_step, steps, quantity, margin_function):
+        """Call a chain of functions to place multiple orders with different prices.
+        Note: Error detection is done in new_margin_order in order.py
+
+        Args:
+            symbol (str, ENUM): the pair of coin to be traded
+            start_price (decimal): the starting price of the chain of orders
+            price_step (decimal): the difference between each order
+            steps (int): How many orders to be placed
+            quantity (decimal): Quantity of the coin to be traded
+            margin_function (function): The function used to place order, either buy or sell
+        
+        Variables:
+            response (str): app-customized response returned from new_margin_order function in order.py
+            error_code (_type_): An attribute added by new_margin_order to response to indicate error code
+            wait (_type_): wait time before retrying the order, increasing with each retry
+
+        Returns:
+            response (dictionary): response from server, to be evaluated in evaluate_order_response
+        """
         for i in range(steps):
             self.after(50)
             try:
                 for j in range(4):  # retry up to 4 times if order fails
                     response = margin_function(symbol, quantity / steps, start_price - (i * price_step))
-                    error_code = response["error_code"]
+                    error_message = response["error_message"]
+                    error_source = response["source"]
+                    error_code = int(response["error_code"])
                     if abs(int(error_code)) == 11008:  # terminate if exceeding account's maximum borrowable limit.
                         break
                     wait = 300 + (j * 700)
-                    self.show_message("Lệnh {}/{} không thành công, sẽ thử lại sau {}s".format(i + 1, steps, wait/1000))
+                    self.show_message("Lệnh {}/{} không thành công, thử lại sau {}s - lỗi {} ({}) - {}"
+                                      .format(i + 1, steps, wait/1000, error_source, error_code, error_message))
                     self.after(wait)
-                break
-            except KeyError as error:
+            except KeyError as error:  # No error_code attribute means order succeeded
                 pass
         return response
 

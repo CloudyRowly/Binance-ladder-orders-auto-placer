@@ -2,7 +2,7 @@ from decimal import Decimal
 import json
 from binance.spot import Spot
 import logging
-from binance.error import ClientError
+from binance.error import ClientError, ServerError
 
 from values import Side, Symbol
 from accounts import Accounts
@@ -87,7 +87,13 @@ class Order:
         except ClientError as error:
             self.error_logging(error)
             return {"error_code": error.error_code,
-                    "error_message": error.error_message}
+                    "error_message": error.error_message,
+                    "source": "client"}
+        except ServerError as error:
+            self.error_logging(error)
+            return {"error_code": error.status_code,
+                    "error_message": error.message,
+                    "source": "server"}
 
 
     def new_spot_order(self, parameters):
